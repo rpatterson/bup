@@ -161,6 +161,19 @@ WVSTART "save/git-fsck"
     WVPASS [ "$n" -eq 0 ]
 ) || exit 1
 
+WVSTART "moved packs"
+rm -rf buptest.pack.tmp
+mkdir buptest.pack.tmp
+WVFAIL git fsck 2>&1 | grep "^error"
+mv $BUP_DIR/objects/pack/*.pack buptest.pack.tmp
+WVPASS git fsck 2>&1 | grep "^error"
+echo "packs moved" > $D/a
+WVPASS bup index -u $D/a
+WVPASS bup save -n master $D/a
+WVPASS git fsck 2>&1 | grep "^error"
+mv buptest.pack.tmp/*.pack $BUP_DIR/objects/pack/
+WVFAIL git fsck 2>&1 | grep "^error"
+
 WVSTART "fsck"
 WVPASS bup fsck
 WVPASS bup fsck --quick
