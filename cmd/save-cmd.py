@@ -261,10 +261,13 @@ if opt.commit or opt.name:
 w.close()  # must close before we can update the ref
         
 if opt.name:
+    update_ref = git.update_ref
     if cli:
-        cli.update_ref(refname, commit, oldref)
+        update_ref = cli.update_ref
+    if oldref:
+        update_ref(refname, commit, oldref)
     else:
-        git.update_ref(refname, commit, oldref)
+        update_ref(refname, commit)
 
 if cli:
     cli.close()

@@ -533,13 +533,12 @@ def rev_get_date(ref):
     raise GitError, 'no such commit %r' % ref
 
 
-def update_ref(refname, newval, oldval):
-    if not oldval:
-        oldval = ''
+def update_ref(refname, newval, oldval=None):
     assert(refname.startswith('refs/heads/'))
-    p = subprocess.Popen(['git', 'update-ref', refname,
-                          newval.encode('hex'), oldval.encode('hex')],
-                         preexec_fn = _gitenv)
+    argv = ['git', 'update-ref', refname, newval.encode('hex')]
+    if oldval:
+        argv.append(oldval.encode('hex'))
+    p = subprocess.Popen(argv, preexec_fn=_gitenv)
     _git_wait('git update-ref', p)
 
 
