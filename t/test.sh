@@ -162,17 +162,24 @@ WVSTART "save/git-fsck"
 ) || exit 1
 
 WVSTART "moved packs"
-rm -rf buptest.pack.tmp
+rm -rf buptest.pack.tmp bupdata.clone.tmp
 mkdir buptest.pack.tmp
 WVFAIL git fsck 2>&1 | grep "^error"
-mv $BUP_DIR/objects/pack/*.pack buptest.pack.tmp
+mv $BUP_DIR/objects/pack/*.pack buptest.pack.tmp/
 WVPASS git fsck 2>&1 | grep "^error"
 echo "packs moved" > $D/a
-WVPASS bup index -u $D/a
-WVPASS bup save -n master $D/a
+WVPASS bup index -u $D
+WVPASS bup save -n master $D
+mv $BUP_DIR/objects/pack/*.pack buptest.pack.tmp/
+echo "packs moved again" > $D/b
+WVPASS bup index -u $D
+WVPASS bup save -n master $D
 WVPASS git fsck 2>&1 | grep "^error"
 mv buptest.pack.tmp/*.pack $BUP_DIR/objects/pack/
 WVFAIL git fsck 2>&1 | grep "^error"
+WVPASS git clone $BUP_DIR bupdata.clone.tmp
+WVPASSEQ "$(cat bupdata.clone.tmp/$TOP/$D/a)" "packs moved"
+WVPASSEQ "$(cat bupdata.clone.tmp/$TOP/$D/b)" "packs moved again"
 
 WVSTART "fsck"
 WVPASS bup fsck
